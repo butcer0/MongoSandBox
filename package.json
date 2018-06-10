@@ -1,0 +1,19 @@
+{
+  "name": "mongo_sandbox",
+  "version": "1.0.0",
+  "description": "Required libraries for the mongo_sandbox class",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/butcer0/MongoSandBox.git"
+  },
+  "author": "Erik Butcher",
+  "license": "MIT",
+  "dependencies": {
+    "hapi": "^16.1.0",
+    "mongodb": "^2.2.22"
+  }
+}
