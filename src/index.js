@@ -28,8 +28,11 @@ server.route( [
     {
         method: 'POST',
         path: '/api/tours',
-        handler: () =>{
-            reply ("Adding new tour");
+        handler: (request, reply) =>{
+            collection.insertOne(request.payload, (error, result) => {
+                reply(request.payload);
+            })
+            // reply ("Adding new tour");
         }
     },
     // Get a single tour
@@ -40,7 +43,6 @@ server.route( [
             collection.findOne({"tourName":request.params.name}, (error, tour) => {
                 reply(tour);
             })
-            // reply (`Retrieving ${request.params.name}`);
         }
     },
     // Update a single tour
@@ -48,7 +50,12 @@ server.route( [
         method: 'PUT',
         path: '/api/tours/{name}',
         handler: (request, reply) => {
-            reply (`Updating ${request.params.name}`);
+           collection.updateOne({tourName:request.params.name},
+        {$set: request.payload}, (error, results) => {
+            collection.findOne({"tourName":request.params.name}, (error, results) => {
+                reply(results);
+            })
+        })
         }
     },
     // Delete a single tour
