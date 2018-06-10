@@ -1,34 +1,34 @@
 var MongoClient = require('mongodb').MongoClient,
     Hapi = require('hapi');
 
-var url='mongodb://localhost:27017/learning_mongo';
+var url = 'mongodb://localhost:27017/learning_mongo';
 
 var server = new Hapi.Server();
 server.connection({
-    port:8080
+    port: 8080
 })
 
-server.route( [
+server.route([
     // Get tour list
     {
         method: 'GET',
         path: '/api/tours',
-        config: {json: { space: 2}},
+        config: { json: { space: 2 } },
         handler: (request, reply) => {
             var findObject = {};
-            for(var key in request.query) {
+            for (var key in request.query) {
                 findObject[key] = request.query[key];
             }
-           collection.find().toArray((error, tours) => {
-               reply(tours);
-           })
+            collection.find().toArray((error, tours) => {
+                reply(tours);
+            })
         }
     },
     // Add new tour
     {
         method: 'POST',
         path: '/api/tours',
-        handler: (request, reply) =>{
+        handler: (request, reply) => {
             collection.insertOne(request.payload, (error, result) => {
                 reply(request.payload);
             })
@@ -40,7 +40,7 @@ server.route( [
         method: 'GET',
         path: '/api/tours/{name}',
         handler: (request, reply) => {
-            collection.findOne({"tourName":request.params.name}, (error, tour) => {
+            collection.findOne({ "tourName": request.params.name }, (error, tour) => {
                 reply(tour);
             })
         }
@@ -50,12 +50,22 @@ server.route( [
         method: 'PUT',
         path: '/api/tours/{name}',
         handler: (request, reply) => {
-           collection.updateOne({tourName:request.params.name},
-        {$set: request.payload}, (error, results) => {
-            collection.findOne({"tourName":request.params.name}, (error, results) => {
-                reply(results);
-            })
-        })
+            if (request.query.replace == "true") {
+                request.payload.tourName = request.params.name;
+                collection.replaceOne({ "tourName": request.params.name }, request.payload, (error, results) => {
+                    collection.findOne({ "tourName": request.params.name }, (error, results) => {
+                        reply(results);
+                    })
+                })
+            } else {
+                collection.updateOne({ tourName: request.params.name },
+                    { $set: request.payload }, (error, results) => {
+                        collection.findOne({ "tourName": request.params.name }, (error, results) => {
+                            reply(results);
+                        })
+                    })
+            }
+
         }
     },
     // Delete a single tour
@@ -63,7 +73,9 @@ server.route( [
         method: 'DELETE',
         path: '/api/tours/{name}',
         handler: (request, reply) => {
-            reply (`Deleting ${request.params.name}`).code(204);
+            collection.deleteOne({ tourName: request.params.name }, (error, results) => {
+                reply().code(204);
+            })
         }
     },
     // Home page
@@ -71,13 +83,13 @@ server.route( [
         method: 'GET',
         path: '/',
         handler: (request, reply) => {
-            reply( "Hello world from Hapi/Mongo example")
+            reply("Hello world from Hapi/Mongo example")
         }
     }
 ])
 
 
-MongoClient.connect(url, (err,db) => {
+MongoClient.connect(url, (err, db) => {
     console.log("Connected successfully to server");
     collection = db.collection('tours');
     server.start((err) => {
